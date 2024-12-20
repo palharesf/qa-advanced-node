@@ -30,6 +30,7 @@ app.set("views", "./views/pug");
 
 const session = require("express-session");
 const passport = require("passport");
+const { ObjectID } = require("mongodb");
 
 app.use(
   session({
@@ -42,3 +43,13 @@ app.use(
 
 passport.initialize();
 passport.session();
+
+passport.serializeUser((user, done) => {
+  done(null, user._id);
+});
+
+passport.deserializeUser((id, done) => {
+  // myDataBase.findOne({ _id: new ObjectID(id) }, (err, doc) => {
+    done(null, null);
+  // });
+});
