@@ -27,3 +27,18 @@ app.listen(PORT, () => {
 
 app.set("view engine", "pug");
 app.set("views", "./views/pug");
+
+const session = require("express-session");
+const passport = require("passport");
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: true,
+    saveUninitialized: true,
+    cookie: {secure: false}
+  })
+);
+
+passport.initialize();
+passport.session();
