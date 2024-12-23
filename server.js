@@ -34,12 +34,6 @@ myDB(async client => {
   routes(app, myDataBase);
   auth(app, myDataBase);
 
-  app.use((req, res, next) => {
-    res.status(404)
-      .type('text')
-      .send('Not Found');
-  });
-
 }).catch(e => {
   app.route('/').get((req, res) => {
     res.render('index', { title: e, message: 'Unable to connect to database' });
