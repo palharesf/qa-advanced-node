@@ -1,10 +1,10 @@
-'use strict';
-require('dotenv').config();
-const express = require('express');
-const myDB = require('./connection');
-const fccTesting = require('./freeCodeCamp/fcctesting.js');
-const session = require('express-session');
-const passport = require('passport');
+"use strict";
+require("dotenv").config();
+const express = require("express");
+const myDB = require("./connection");
+const fccTesting = require("./freeCodeCamp/fcctesting.js");
+const session = require("express-session");
+const passport = require("passport");
 const routes = require("./routes.js");
 const auth = require("./auth.js");
 
@@ -18,17 +18,19 @@ const MongoStore = require("connect-mongo")(session);
 const URI = process.env.MONGO_URI;
 const store = new MongoStore({ url: URI });
 
-app.set('view engine', 'pug');
-app.set('views', './views/pug');
+app.set("view engine", "pug");
+app.set("views", "./views/pug");
 
-app.use(session({
-  secret: process.env.SESSION_SECRET,
-  key: "express.sid",
-  store: store,
-  resave: true,
-  saveUninitialized: true,
-  cookie: { secure: false }
-}));
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    key: "express.sid",
+    store: store,
+    resave: true,
+    saveUninitialized: true,
+    cookie: { secure: false },
+  })
+);
 
 io.use(
   passportSocketIo.authorize({
@@ -45,7 +47,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 fccTesting(app); // For fCC testing purposes
-app.use('/public', express.static(process.cwd() + '/public'));
+app.use("/public", express.static(process.cwd() + "/public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -61,9 +63,8 @@ function onAuthorizeFail(data, message, error, accept) {
   accept(null, false);
 }
 
-
-myDB(async client => {
-  const myDataBase = await client.db('database').collection('users');
+myDB(async (client) => {
+  const myDataBase = await client.db("database").collection("users");
 
   routes(app, myDataBase);
   auth(app, myDataBase);
@@ -72,20 +73,27 @@ myDB(async client => {
 
   io.on("connection", (socket) => {
     currentUsers++;
-    io.emit("user count", currentUsers);
+    io.emit("user", {
+      username: socket.request.user.username,
+      currentUsers,
+      connected: true,
+    });
     console.log("User " + socket.request.user.username + " connected");
     socket.on("disconnect", () => {
       currentUsers--;
-      io.emit("users", currentUsers);
+      io.emit("user", {
+        username: socket.request.user.username,
+        currentUsers,
+        connected: false,
+      });
     });
   });
-
-}).catch(e => {
-  app.route('/').get((req, res) => {
-    res.render('index', { title: e, message: 'Unable to connect to database' });
+}).catch((e) => {
+  app.route("/").get((req, res) => {
+    res.render("index", { title: e, message: "Unable to connect to database" });
   });
 });
-  
+
 const PORT = process.env.PORT || 3000;
 http.listen(PORT, () => {
   console.log(`Listening on port ${PORT}`);
